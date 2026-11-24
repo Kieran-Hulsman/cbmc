@@ -1,0 +1,22 @@
+CORE dfcc-only
+main.c
+--dfcc main --apply-loop-contracts --verbosity 10 _ --no-standard-checks
+^EXIT=0$
+^SIGNAL=0$
+^Skipping loop assigns inference for function main: all loops with contracts have an assigns clause\.$
+^\[main.loop_assigns.\d+\] line \d+ Check assigns clause inclusion for loop main\.0: SUCCESS$
+^\[main.loop_assigns.\d+\] line \d+ Check assigns clause inclusion for loop main\.1: SUCCESS$
+^\[main.loop_invariant_base.\d+\] line \d+ Check invariant before entry for loop main\.0: SUCCESS$
+^\[main.loop_invariant_base.\d+\] line \d+ Check invariant before entry for loop main\.1: SUCCESS$
+^\[main.loop_invariant_step.\d+\] line \d+ Check invariant after step for loop main\.0: SUCCESS$
+^\[main.loop_invariant_step.\d+\] line \d+ Check invariant after step for loop main\.1: SUCCESS$
+^\[incr.assigns.\d+\] .* Check that \*p is assignable: SUCCESS$
+^\[add_two.assigns.\d+\] .* Check that g is assignable: SUCCESS$
+^\[main.assertion.\d+\] .* x counts the iterations: SUCCESS$
+^\[main.assertion.\d+\] .* g counts twice the iterations: SUCCESS$
+^VERIFICATION SUCCESSFUL$
+--
+^No assigns clause provided for loop
+--
+This test checks that the loop assigns inference is skipped when both loops
+have an explicit assigns clause.

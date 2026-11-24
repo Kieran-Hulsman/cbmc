@@ -528,15 +528,20 @@ dfcc_cfg_infot::dfcc_cfg_infot(
     auto topsorted = loop_nesting_graph.topsort();
 
     bool has_loops_with_contracts = false;
+    bool must_infer_loop_assigns = false;
     for(const auto idx : topsorted)
     {
       topsorted_loops.push_back(idx);
-      has_loops_with_contracts |= has_contract(
-        loop_nesting_graph[idx].latch, loop_contract_config.check_side_effect);
+      const auto &latch = loop_nesting_graph[idx].latch;
+      if(has_contract(latch, loop_contract_config.check_side_effect))
+      {
+        has_loops_with_contracts = true;
+        must_infer_loop_assigns |= get_loop_assigns(latch).operands().empty();
+      }
     }
 
-    // We infer loop assigns for all loops in the function.
-    if(has_loops_with_contracts)
+    // Only loops with a contract but no assigns clause use inferred assigns.
+    if(must_infer_loop_assigns)
     {
       dfcc_infer_loop_assigns_for_function(
         inferred_loop_assigns_map,
@@ -544,6 +549,13 @@ dfcc_cfg_infot::dfcc_cfg_infot(
         goto_function,
         message_handler,
         ns);
+    }
+    else if(has_loops_with_contracts)
+    {
+      log.debug() << "Skipping loop assigns inference for function "
+                  << function_id
+                  << ": all loops with contracts have an assigns clause."
+                  << messaget::eom;
     }
   }
 
