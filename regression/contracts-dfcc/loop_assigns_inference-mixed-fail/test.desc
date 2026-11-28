@@ -1,0 +1,18 @@
+CORE dfcc-only
+main.c
+--dfcc main --apply-loop-contracts _ --no-standard-checks
+^EXIT=10$
+^SIGNAL=0$
+^\[main.assertion.\d+\] .* x counts the iterations: SUCCESS$
+^\[main.assertion.\d+\] .* g written as a global: FAILURE$
+^\[main.assertion.\d+\] .* y written through a parameter: FAILURE$
+^\[main.assertion.\d+\] .* x not written by the second loop: SUCCESS$
+^VERIFICATION FAILED$
+--
+^\[.*\.assigns\.\d+\] .*: FAILURE$
+^\[main\.loop_assigns\.\d+\] .*: FAILURE$
+^\[main\.loop_invariant_(base|step)\.\d+\] .*: FAILURE$
+--
+This test checks that the second loop still havocs its inferred targets g and
+y when the first loop has an explicit assigns clause. The writes happen in a
+later iteration, so the assertions after the loop fail only if it havocs them.
